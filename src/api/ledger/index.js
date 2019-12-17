@@ -1,9 +1,8 @@
 import Router from 'koa-router';
+import * as ledgerCtrl from './ledger.ctrl';
 
 const ledger = new Router();
 
-ledger.get('/', ctx => {
-  console.log('가계부 가져오기');
-});
+ledger.post('/add', ledgerCtrl.addLedger);
 
 export default ledger;
