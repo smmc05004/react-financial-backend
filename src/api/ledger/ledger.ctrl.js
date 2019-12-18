@@ -20,3 +20,24 @@ export const addLedger = async ctx => {
     ctx.throw(500, e);
   }
 };
+
+export const ledgerList = async ctx => {
+  const pageNum = parseInt(ctx.query.pageNum || '1', 10);
+
+  if (pageNum < 1) {
+    ctx.status = 400;
+    return;
+  }
+
+  try {
+    const ledgers = await Ledger.find()
+      .sort({ _id: -1 })
+      .limit(10)
+      .skip((pageNum - 1) * 10)
+      .exec();
+    const totalCount = await Ledger.countDocuments().exec();
+    ctx.body = { ledgers, totalCount };
+  } catch (e) {
+    ctx.throw(500, e);
+  }
+};
