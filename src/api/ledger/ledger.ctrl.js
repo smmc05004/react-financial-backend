@@ -41,3 +41,17 @@ export const ledgerList = async ctx => {
     ctx.throw(500, e);
   }
 };
+
+export const getLedger = async ctx => {
+  const { id } = ctx.request.body;
+  try {
+    const ledger = await Ledger.findById(id).exec();
+    if (!ledger) {
+      ctx.status = 404;
+      return;
+    }
+    ctx.body = ledger;
+  } catch (e) {
+    ctx.throw(500, e);
+  }
+};
