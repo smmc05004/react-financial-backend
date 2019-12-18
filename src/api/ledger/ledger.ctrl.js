@@ -30,13 +30,13 @@ export const ledgerList = async ctx => {
   }
 
   try {
-    const ledgers = await Ledger.find()
+    const list = await Ledger.find()
       .sort({ _id: -1 })
       .limit(10)
       .skip((pageNum - 1) * 10)
       .exec();
     const totalCount = await Ledger.countDocuments().exec();
-    ctx.body = { ledgers, totalCount };
+    ctx.body = { list, totalCount };
   } catch (e) {
     ctx.throw(500, e);
   }

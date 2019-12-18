@@ -46,7 +46,6 @@ export const register = async ctx => {
 
 export const login = async ctx => {
   const { userId, password } = ctx.request.body;
-  console.log('받아온 parameter: ', userId, password);
 
   if (!userId || !password) {
     console.error('아이디 혹은 비밀번호 입력 오류');
@@ -79,7 +78,6 @@ export const login = async ctx => {
 };
 
 export const check = async ctx => {
-  console.log('ctx: ', ctx.state);
   const { user } = ctx.state;
   if (!user) {
     console.error('권한 없음');
@@ -90,7 +88,6 @@ export const check = async ctx => {
 };
 
 export const logout = async ctx => {
-  console.log('쿠키: ', ctx.cookies);
   ctx.cookies.set('access_token');
   ctx.status = 201;
 };
