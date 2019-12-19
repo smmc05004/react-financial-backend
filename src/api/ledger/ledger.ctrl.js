@@ -58,12 +58,10 @@ export const getLedger = async ctx => {
 
 export const updateLedger = async ctx => {
   const { id } = ctx.request.body;
-  console.log('update id: ', id);
   try {
     const ledger = await Ledger.findByIdAndUpdate(id, ctx.request.body, {
       new: true,
     }).exec();
-    console.log('업데이트 ledger: ', ledger);
     if (!ledger) {
       ctx.status = 404;
       return;
