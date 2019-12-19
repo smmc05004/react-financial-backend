@@ -2,7 +2,7 @@
 import Ledger from '../../models/ledger';
 
 export const addLedger = async ctx => {
-  const { type, category, title, place, amount, user } = ctx.request.body;
+  const { type, category, title, place, amount, date, user } = ctx.request.body;
 
   const ledger = new Ledger({
     type,
@@ -10,6 +10,7 @@ export const addLedger = async ctx => {
     title,
     place,
     amount,
+    date,
     user,
   });
 

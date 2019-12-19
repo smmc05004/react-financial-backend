@@ -11,6 +11,7 @@ const LedgerSchema = new Schema({
   title: String,
   place: String,
   amount: Number,
+  date: Date,
   user: UserSchema,
 });
 
