@@ -1,3 +1,4 @@
+/* eslint-disable no-dupe-keys */
 /* eslint-disable require-atomic-updates */
 import Ledger from '../../models/ledger';
 
@@ -23,7 +24,12 @@ export const addLedger = async ctx => {
 };
 
 export const ledgerList = async ctx => {
+  const { userId, period } = ctx.query;
   const pageNum = parseInt(ctx.query.pageNum || '1', 10);
+
+  const firstDate = `${period}-01`;
+  const monthLastDate = new Date(2019, 12, 0).getDate();
+  const lastDate = `${period}-${monthLastDate}`;
 
   if (pageNum < 1) {
     ctx.status = 400;
@@ -32,11 +38,22 @@ export const ledgerList = async ctx => {
 
   try {
     const list = await Ledger.find()
-      .sort({ _id: -1 })
+      .where('user.userId')
+      .equals(userId)
+      .where('date')
+      .gte(firstDate)
+      .where('date')
+      .lte(lastDate)
+      .sort({ date: -1 })
       .limit(10)
       .skip((pageNum - 1) * 10)
       .exec();
-    const totalCount = await Ledger.countDocuments().exec();
+    const totalCount = await Ledger.countDocuments({
+      'user.userId': userId,
+      date: { $gte: firstDate },
+      date: { $lte: lastDate },
+    }).exec();
+
     ctx.body = { list, totalCount };
   } catch (e) {
     ctx.throw(500, e);
