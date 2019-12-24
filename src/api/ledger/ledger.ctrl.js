@@ -3,7 +3,16 @@
 import Ledger from '../../models/ledger';
 
 export const addLedger = async ctx => {
-  const { type, category, title, place, amount, date, user } = ctx.request.body;
+  const {
+    type,
+    category,
+    title,
+    place,
+    amount,
+    date,
+    use,
+    user,
+  } = ctx.request.body;
 
   const ledger = new Ledger({
     type,
@@ -12,6 +21,7 @@ export const addLedger = async ctx => {
     place,
     amount,
     date,
+    use,
     user,
   });
 
@@ -40,6 +50,8 @@ export const ledgerList = async ctx => {
     const list = await Ledger.find()
       .where('user.userId')
       .equals(userId)
+      .where('use')
+      .equals('Y')
       .where('date')
       .gte(firstDate)
       .where('date')
@@ -52,6 +64,7 @@ export const ledgerList = async ctx => {
       'user.userId': userId,
       date: { $gte: firstDate },
       date: { $lte: lastDate },
+      use: 'Y',
     }).exec();
 
     ctx.body = { list, totalCount };
@@ -85,6 +98,30 @@ export const updateLedger = async ctx => {
       return;
     }
     ctx.body = ledger;
+  } catch (e) {
+    ctx.throw(500, e);
+  }
+};
+
+export const remove = async ctx => {
+  const { idArr } = ctx.request.body;
+  const removed = [];
+
+  try {
+    for (let i = 0; i < idArr.length; i++) {
+      const removedLedger = await Ledger.findOneAndUpdate(
+        { _id: idArr[i] },
+        {
+          $set: { use: 'N' },
+        },
+        {
+          new: true,
+        },
+      );
+
+      removed.push(removedLedger._id);
+    }
+    ctx.body = removed;
   } catch (e) {
     ctx.throw(500, e);
   }
