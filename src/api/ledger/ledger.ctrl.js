@@ -37,9 +37,7 @@ export const ledgerList = async ctx => {
   const { userId, period } = ctx.query;
   const pageNum = parseInt(ctx.query.pageNum || '1', 10);
 
-  const firstDate = `${period}-01`;
-  const monthLastDate = new Date(2019, 12, 0).getDate();
-  const lastDate = `${period}-${monthLastDate}`;
+  const { firstDate, lastDate } = getStartEndDate(period);
 
   if (pageNum < 1) {
     ctx.status = 400;
@@ -126,3 +124,37 @@ export const remove = async ctx => {
     ctx.throw(500, e);
   }
 };
+
+export const analysis = async ctx => {
+  const { userId, period } = ctx.request.body;
+
+  const { firstDate, lastDate } = getStartEndDate(period);
+  console.log('날짜: ', firstDate, ', ', lastDate);
+
+  const result = await Ledger.aggregate([
+    {
+      $match: {
+        $and: [
+          { 'user.userId': userId },
+          { use: 'Y' },
+          { date: { $gte: new Date(firstDate) } },
+          { date: { $lte: new Date(lastDate) } },
+        ],
+      },
+    },
+    { $group: { _id: '$category', total: { $sum: '$amount' } } },
+  ]);
+  ctx.body = result;
+};
+
+function getStartEndDate(period) {
+  console.log('날짜 구하기 시작');
+  console.log('param: ', period);
+
+  const firstDate = `${period}-01`;
+  const monthLastDate = new Date(2019, 12, 0).getDate();
+  const lastDate = `${period}-${monthLastDate}`;
+  console.log('구한 날짜: ', firstDate, ', ', lastDate);
+
+  return { firstDate, lastDate };
+}

@@ -8,5 +8,6 @@ ledger.get('/lists', ledgerCtrl.ledgerList);
 ledger.post('/read', ledgerCtrl.getLedger);
 ledger.post('/update', ledgerCtrl.updateLedger);
 ledger.post('/remove', ledgerCtrl.remove);
+ledger.get('/analysis', ledgerCtrl.analysis);
 
 export default ledger;
