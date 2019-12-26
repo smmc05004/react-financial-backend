@@ -129,7 +129,6 @@ export const analysis = async ctx => {
   const { userId, period } = ctx.request.body;
 
   const { firstDate, lastDate } = getStartEndDate(period);
-  console.log('날짜: ', firstDate, ', ', lastDate);
 
   const result = await Ledger.aggregate([
     {
@@ -148,13 +147,13 @@ export const analysis = async ctx => {
 };
 
 function getStartEndDate(period) {
-  console.log('날짜 구하기 시작');
-  console.log('param: ', period);
-
   const firstDate = `${period}-01`;
-  const monthLastDate = new Date(2019, 12, 0).getDate();
+
+  const yyyy = period.substring(0, 4);
+  const mm = period.substring(5);
+
+  const monthLastDate = new Date(yyyy, mm, 0).getDate();
   const lastDate = `${period}-${monthLastDate}`;
-  console.log('구한 날짜: ', firstDate, ', ', lastDate);
 
   return { firstDate, lastDate };
 }
