@@ -128,66 +128,75 @@ export const remove = async ctx => {
 export const analysis = async ctx => {
   const expense = { label: [], data: [] };
   const income = { label: [], data: [] };
+  const sum = { type: [], data: [] };
 
   const { userId, period } = ctx.query;
   const { firstDate, lastDate } = getStartEndDate(period);
 
-  const expenseResult = await Ledger.aggregate([
-    {
-      $match: {
-        $and: [
-          { 'user.userId': userId },
-          { use: 'Y' },
-          { date: { $gte: new Date(firstDate) } },
-          { date: { $lte: new Date(lastDate) } },
-          { type: 'expense' },
-        ],
+  try {
+    const expenseResult = await Ledger.aggregate([
+      {
+        $match: {
+          $and: [
+            { 'user.userId': userId },
+            { use: 'Y' },
+            { date: { $gte: new Date(firstDate) } },
+            { date: { $lte: new Date(lastDate) } },
+            { type: 'expense' },
+          ],
+        },
       },
-    },
-    { $group: { _id: '$category', total: { $sum: '$amount' } } },
-  ]);
+      { $group: { _id: '$category', total: { $sum: '$amount' } } },
+    ]);
 
-  const incomeResult = await Ledger.aggregate([
-    {
-      $match: {
-        $and: [
-          { 'user.userId': userId },
-          { use: 'Y' },
-          { date: { $gte: new Date(firstDate) } },
-          { date: { $lte: new Date(lastDate) } },
-          { type: 'income' },
-        ],
+    const incomeResult = await Ledger.aggregate([
+      {
+        $match: {
+          $and: [
+            { 'user.userId': userId },
+            { use: 'Y' },
+            { date: { $gte: new Date(firstDate) } },
+            { date: { $lte: new Date(lastDate) } },
+            { type: 'income' },
+          ],
+        },
       },
-    },
-    { $group: { _id: '$category', total: { $sum: '$amount' } } },
-  ]);
+      { $group: { _id: '$category', total: { $sum: '$amount' } } },
+    ]);
 
-  const sumResult = await Ledger.aggregate([
-    {
-      $match: {
-        $and: [
-          { 'user.userId': userId },
-          { use: 'Y' },
-          { date: { $gte: new Date(firstDate) } },
-          { date: { $lte: new Date(lastDate) } },
-        ],
+    const sumResult = await Ledger.aggregate([
+      {
+        $match: {
+          $and: [
+            { 'user.userId': userId },
+            { use: 'Y' },
+            { date: { $gte: new Date(firstDate) } },
+            { date: { $lte: new Date(lastDate) } },
+          ],
+        },
       },
-    },
-    { $group: { _id: '$type', total: { $sum: '$amount' } } },
-  ]);
+      { $group: { _id: '$type', total: { $sum: '$amount' } } },
+    ]);
 
-  for (let i = 0; i < expenseResult.length; i++) {
-    const ex = expenseResult[i];
-    expense.label.push(ex._id);
-    expense.data.push(ex.total);
+    for (let i = 0; i < expenseResult.length; i++) {
+      const ex = expenseResult[i];
+      expense.label.push(ex._id);
+      expense.data.push(ex.total);
+    }
+    for (let i = 0; i < incomeResult.length; i++) {
+      const inc = incomeResult[i];
+      income.label.push(inc._id);
+      income.data.push(inc.total);
+    }
+    for (let i = 0; i < sumResult.length; i++) {
+      const su = sumResult[i];
+      sum.type.push(su._id);
+      sum.data.push(su.total);
+    }
+    ctx.body = { expense, income, sum };
+  } catch (e) {
+    ctx.throw(500, e);
   }
-  for (let i = 0; i < incomeResult.length; i++) {
-    const inc = incomeResult[i];
-    income.label.push(inc._id);
-    income.data.push(inc.total);
-  }
-
-  ctx.body = { expense, income, sumResult };
 };
 
 function getStartEndDate(period) {
